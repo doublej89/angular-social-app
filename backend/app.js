@@ -1,7 +1,18 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const Post = require("./models/post");
 
 const app = express();
+
+mongoose
+  .connect("mongodb://goldenone:test123@ds137661.mlab.com:37661/gqlbooks")
+  .then(() => {
+    console.log("Connected to database, yea!");
+  })
+  .catch(() => {
+    console.log("Something evil happened!");
+  });
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -19,17 +30,26 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/api/posts", (req, res, next) => {
-  const posts = [
-    { id: "hf3894fh83fhufw723", title: "Post 1", content: "First server post" },
-    { id: "589gr38u88t29t", title: "Post 2", content: "Second server post" }
-  ];
-  res.status(200).json({ message: "Posts fetched!", posts: posts });
+app.get("/api/posts", (req, res, next) => {
+  Post.find().then(documents => {
+    res.status(200).json({ message: "Posts fetched!", posts: documents });
+  });
 });
 
 app.post("/api/posts", (req, res, next) => {
-  const post = req.body;
-  res.status(201).json();
+  const post = new Post({
+    title: req.body.title,
+    content: req.body.content
+  });
+  post.save().then(result => {
+    res.status(201).json({ message: "Post succeeded!", postId: result._id });
+  });
+});
+
+app.delete("/api/posts/:id", (req, res, next) => {
+  Post.deleteOne({ _id: req.params.id }).then(result => {
+    res.status(200).json({ message: "Post deleted" });
+  });
 });
 
 module.exports = app;
