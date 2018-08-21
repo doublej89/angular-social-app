@@ -3,12 +3,17 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const Post = require("./models/post");
+const User = require("./models/user");
+const bcrypt = require("bcrypt");
 const multer = require("multer");
 const MIME_TYPE_MAP = {
   "image/png": "png",
   "image/jpg": "jpg",
   "image/jpeg": "jpg"
 };
+
+const jwt = require("jsonwebtoken");
+const checkToken = require("./middleware/check-token");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -48,7 +53,7 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
   );
   res.setHeader(
     "Access-Control-Allow-Methods",
@@ -71,18 +76,17 @@ app.get("/api/posts", (req, res, next) => {
       return Post.count();
     })
     .then(count => {
-      res
-        .status(200)
-        .json({
-          message: "Posts fetched!",
-          posts: fetchedPosts,
-          maxPosts: count
-        });
+      res.status(200).json({
+        message: "Posts fetched!",
+        posts: fetchedPosts,
+        maxPosts: count
+      });
     });
 });
 
 app.post(
   "/api/posts",
+  checkToken,
   multer({ storage: storage }).single("image"),
   (req, res, next) => {
     const url = req.protocol + "://" + req.get("host");
@@ -107,6 +111,7 @@ app.post(
 
 app.put(
   "/api/posts/:id",
+  checkToken,
   multer({ storage: storage }).single("image"),
   (req, res, next) => {
     let imagePath = req.body.imagePath;
@@ -138,10 +143,53 @@ app.get("/api/posts/:id", (req, res, next) => {
   });
 });
 
-app.delete("/api/posts/:id", (req, res, next) => {
+app.delete("/api/posts/:id", checkToken, (req, res, next) => {
   Post.deleteOne({ _id: req.params.id }).then(result => {
     res.status(200).json({ message: "Post deleted" });
   });
+});
+
+app.post("/api/user/signup", (req, res, next) => {
+  bcrypt.hash(req.body.password, 10).then(hash => {
+    const user = new User({
+      email: req.body.email,
+      password: hash
+    });
+    user
+      .save()
+      .then(result => {
+        res.status(201).json({ message: "User created!", result: result });
+      })
+      .catch(err => {
+        res.status(500).json({ error: err });
+      });
+  });
+});
+
+app.post("/api/user/login", (req, res, next) => {
+  let fetchedUser;
+  User.findOne({ email: req.body.email })
+    .then(user => {
+      if (!user) {
+        return res.status(401).json({ message: "User doesn't exist" });
+      }
+      fetchedUser = user;
+      return bcrypt.compare(req.body.password, user.password);
+    })
+    .then(result => {
+      if (!result) {
+        return res.status(401).json({ message: "Password doesn't match" });
+      }
+      const token = jwt.sign(
+        { email: fetchedUser.email, userId: fetchedUser._id },
+        "super_secret_private_key",
+        { expiresIn: "1hr" }
+      );
+      res.status(200).json({ token: token, expiresIn: 3600 });
+    })
+    .catch(err => {
+      return res.status(401).json({ message: "Password doesn't match" });
+    });
 });
 
 module.exports = app;
