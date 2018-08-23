@@ -93,7 +93,8 @@ app.post(
     const post = new Post({
       title: req.body.title,
       content: req.body.content,
-      imagePath: url + "/images/" + req.file.filename
+      imagePath: url + "/images/" + req.file.filename,
+      creator: req.userData.userId
     });
     post.save().then(result => {
       res.status(201).json({
@@ -123,12 +124,22 @@ app.put(
       _id: req.body.id,
       title: req.body.title,
       content: req.body.content,
-      imagePath: imagePath
+      imagePath: imagePath,
+      creator: req.userData.userId
     });
-    Post.updateOne({ _id: req.params.id }, post).then(result => {
-      res
-        .status(200)
-        .json({ message: "Update succeeded!", imagePath: result.imagePath });
+    Post.updateOne(
+      { _id: req.params.id, creator: req.userData.userId },
+      post
+    ).then(result => {
+      if (result.nModified > 0) {
+        res
+          .status(200)
+          .json({ message: "Update succeeded!", imagePath: result.imagePath });
+      } else {
+        res
+          .status(401)
+          .json({ message: "Not Authorized!", imagePath: result.imagePath });
+      }
     });
   }
 );
@@ -144,9 +155,15 @@ app.get("/api/posts/:id", (req, res, next) => {
 });
 
 app.delete("/api/posts/:id", checkToken, (req, res, next) => {
-  Post.deleteOne({ _id: req.params.id }).then(result => {
-    res.status(200).json({ message: "Post deleted" });
-  });
+  Post.deleteOne({ _id: req.params.id, creator: req.userData.userId }).then(
+    result => {
+      if (result.n > 0) {
+        res.status(200).json({ message: "Post deleted!" });
+      } else {
+        res.status(401).json({ message: "Not Authorized!" });
+      }
+    }
+  );
 });
 
 app.post("/api/user/signup", (req, res, next) => {
@@ -185,7 +202,9 @@ app.post("/api/user/login", (req, res, next) => {
         "super_secret_private_key",
         { expiresIn: "1hr" }
       );
-      res.status(200).json({ token: token, expiresIn: 3600 });
+      res
+        .status(200)
+        .json({ token: token, expiresIn: 3600, userId: fetchedUser._id });
     })
     .catch(err => {
       return res.status(401).json({ message: "Password doesn't match" });
