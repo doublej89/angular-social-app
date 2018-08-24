@@ -37,7 +37,7 @@ const storage = multer.diskStorage({
 const app = express();
 
 mongoose
-  .connect("mongodb://goldenone:test123@ds137661.mlab.com:37661/gqlbooks")
+  .connect(process.env.MONGO_CONNECTION_STRING)
   .then(() => {
     console.log("Connected to database, yea!");
   })
@@ -81,6 +81,11 @@ app.get("/api/posts", (req, res, next) => {
         posts: fetchedPosts,
         maxPosts: count
       });
+    })
+    .catch(err => {
+      res.status(500).json({
+        message: "Couldn't fetch posts! Possibly a technical malfunction"
+      });
     });
 });
 
@@ -96,17 +101,22 @@ app.post(
       imagePath: url + "/images/" + req.file.filename,
       creator: req.userData.userId
     });
-    post.save().then(result => {
-      res.status(201).json({
-        message: "Post succeeded!",
-        post: {
-          id: result._id,
-          title: result.title,
-          content: result.content,
-          imagePath: result.imagePath
-        }
+    post
+      .save()
+      .then(result => {
+        res.status(201).json({
+          message: "Post succeeded!",
+          post: {
+            id: result._id,
+            title: result.title,
+            content: result.content,
+            imagePath: result.imagePath
+          }
+        });
+      })
+      .catch(err => {
+        res.status(500).json({ message: "Unable to create post!" });
       });
-    });
   }
 );
 
@@ -127,43 +137,52 @@ app.put(
       imagePath: imagePath,
       creator: req.userData.userId
     });
-    Post.updateOne(
-      { _id: req.params.id, creator: req.userData.userId },
-      post
-    ).then(result => {
-      if (result.nModified > 0) {
+    Post.updateOne({ _id: req.params.id, creator: req.userData.userId }, post)
+      .then(result => {
+        if (result.n > 0) {
+          res.status(200).json({ message: "Update succeeded!" });
+        } else {
+          res.status(401).json({ message: "Not Authorized!" });
+        }
+      })
+      .catch(err => {
         res
-          .status(200)
-          .json({ message: "Update succeeded!", imagePath: result.imagePath });
-      } else {
-        res
-          .status(401)
-          .json({ message: "Not Authorized!", imagePath: result.imagePath });
-      }
-    });
+          .status(500)
+          .json({ message: "Possible a technical malfunction error!" });
+      });
   }
 );
 
 app.get("/api/posts/:id", (req, res, next) => {
-  Post.findById(req.params.id).then(post => {
-    if (post) {
-      res.status(200).json(post);
-    } else {
-      res.status(404).json({ message: "Post not found!" });
-    }
-  });
+  Post.findById(req.params.id)
+    .then(post => {
+      if (post) {
+        res.status(200).json(post);
+      } else {
+        res.status(404).json({ message: "Post not found!" });
+      }
+    })
+    .catch(err => {
+      res.status(500).json({
+        message: "Couldn't fetch the post! Possibly a technical malfunction"
+      });
+    });
 });
 
 app.delete("/api/posts/:id", checkToken, (req, res, next) => {
-  Post.deleteOne({ _id: req.params.id, creator: req.userData.userId }).then(
-    result => {
+  Post.deleteOne({ _id: req.params.id, creator: req.userData.userId })
+    .then(result => {
       if (result.n > 0) {
         res.status(200).json({ message: "Post deleted!" });
       } else {
         res.status(401).json({ message: "Not Authorized!" });
       }
-    }
-  );
+    })
+    .catch(err => {
+      res.status(500).json({
+        message: "Couldn't delete the post! Possibly a technical malfunction"
+      });
+    });
 });
 
 app.post("/api/user/signup", (req, res, next) => {
@@ -178,7 +197,9 @@ app.post("/api/user/signup", (req, res, next) => {
         res.status(201).json({ message: "User created!", result: result });
       })
       .catch(err => {
-        res.status(500).json({ error: err });
+        res
+          .status(500)
+          .json({ message: "A user with this email address already exists!" });
       });
   });
 });
@@ -188,7 +209,9 @@ app.post("/api/user/login", (req, res, next) => {
   User.findOne({ email: req.body.email })
     .then(user => {
       if (!user) {
-        return res.status(401).json({ message: "User doesn't exist" });
+        return res
+          .status(401)
+          .json({ message: "No user with this email address exists" });
       }
       fetchedUser = user;
       return bcrypt.compare(req.body.password, user.password);
@@ -199,7 +222,7 @@ app.post("/api/user/login", (req, res, next) => {
       }
       const token = jwt.sign(
         { email: fetchedUser.email, userId: fetchedUser._id },
-        "super_secret_private_key",
+        process.env.JWT_KEY,
         { expiresIn: "1hr" }
       );
       res
@@ -207,7 +230,9 @@ app.post("/api/user/login", (req, res, next) => {
         .json({ token: token, expiresIn: 3600, userId: fetchedUser._id });
     })
     .catch(err => {
-      return res.status(401).json({ message: "Password doesn't match" });
+      return res
+        .status(401)
+        .json({ message: "Invalid authentication credentials!" });
     });
 });
 

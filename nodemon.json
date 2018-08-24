@@ -1,0 +1,6 @@
+{
+  "env": {
+    "MONGO_CONNECTION_STRING": "mongodb://goldenone:test123@ds137661.mlab.com:37661/gqlbooks",
+    "JWT_KEY": "super_secret_private_key"
+  }
+}
