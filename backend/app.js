@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const Post = require("./models/post");
 const User = require("./models/user");
 const Profile = require("./models/profile");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const multer = require("multer");
 const MIME_TYPE_MAP = {
   "image/png": "png",
