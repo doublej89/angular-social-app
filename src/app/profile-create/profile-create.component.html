@@ -1,0 +1,30 @@
+<mat-card>
+  <mat-spinner *ngIf="isLoading"></mat-spinner>
+  <form [formGroup]="form" (submit)="onSaveProfile()" *ngIf="!isLoading">
+    <mat-form-field appearance="outline">
+      <mat-label>* Profile Handle</mat-label>
+      <input matInput type="text" formControlName="handle" placeholder="* Profile Handle">
+      <mat-error *ngIf="form.get('handle').invalid && form.get('handle').touched">Please select a unique username</mat-error>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-select formControlName="genderOption" placeholder="Gender">
+        <mat-option *ngFor="let gender of genders" [value]="gender">
+          {{gender}}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.get('genderOption').invalid && form.get('genderOption').touched">Please select a gender</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Company</mat-label>
+      <input matInput type="text" formControlName="company" placeholder="Company">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Location</mat-label>
+      <input matInput type="text" formControlName="location" placeholder="Location">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <textarea matInput rows="6" formControlName="bio" placeholder="Profile bio"></textarea>
+    </mat-form-field>
+    <button mat-raised-button color="accent" type="submit">Save Profile</button>
+  </form>
+</mat-card>

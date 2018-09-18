@@ -1,0 +1,33 @@
+<mat-card>
+  <mat-spinner *ngIf="isLoading"></mat-spinner>
+  <form [formGroup]="expForm" (submit)="onAddExp()" *ngIf="!isLoading">
+    <mat-form-field appearance="outline">
+      <mat-label>* Company</mat-label>
+      <input matInput type="text" formControlName="company" placeholder="* Company">
+      <mat-error *ngIf="expForm.get('company').invalid && expForm.get('company').touched">Please enter the name of the company</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>* Job Title</mat-label>
+      <input matInput type="text" formControlName="title" placeholder="* Job Title">
+      <mat-error *ngIf="expForm.get('title').invalid && expForm.get('title').touched">Please enter your job title</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>* Job Location</mat-label>
+      <input matInput type="text" formControlName="location" placeholder="* Job Location">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>From Date</mat-label>
+      <input matInput type="date" formControlName="from">
+      <mat-error *ngIf="expForm.get('from').invalid && expForm.get('from').touched">Your job must've started some time!</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>To Date</mat-label>
+      <input matInput type="date" formControlName="to">
+    </mat-form-field>
+    <mat-checkbox (change)="handleCheck()" [value]="current">Current</mat-checkbox>
+    <mat-form-field appearance="outline">
+      <textarea matInput rows="6" formControlName="description" placeholder="Job Description"></textarea>
+    </mat-form-field>
+    <button mat-raised-button color="accent" type="submit">Add Experience</button>
+  </form>
+</mat-card>

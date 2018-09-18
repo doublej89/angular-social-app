@@ -1,0 +1,52 @@
+<mat-spinner *ngIf="isLoading"></mat-spinner>
+<div class="container"><a routerLink="/" class="btn btn-light mb-3">
+    Back to Feed
+  </a></div>
+<mat-card *ngIf="!isLoading">
+  <mat-card-header>
+    <div mat-card-avatar style="background-size: cover;"><img style="width: 100%; border-radius: 50%;" [src]="post.avatar"
+        alt=""></div>
+    <mat-card-title>{{post.title}}</mat-card-title>
+    <mat-card-subtitle>{{post.date | amTimeAgo:true}}</mat-card-subtitle>
+  </mat-card-header>
+  <img mat-card-image [src]="post.imagePath" alt="post.title">
+  <mat-card-content>
+    <p>
+      {{post.content}}
+    </p>
+  </mat-card-content>
+  <form #commentForm="ngForm" (submit)="onSaveComment(commentForm)">
+    <mat-form-field appearance="outline">
+      <textarea matInput rows="6" name="commentText" ngModel required [placeholder]="isAuthenticated ? 'Reply to post' : 'Please sign in to comment'"></textarea>
+    </mat-form-field>
+    <button [disabled]="!isAuthenticated || !commentForm.valid" mat-raised-button color="accent" type="submit">Submit</button>
+  </form>
+</mat-card>
+<div>
+  <div class="container mt-4">
+    <div *ngIf="post && post.comments" class="row">
+      <div class="col-md-12">
+        <div *ngFor="let comment of post.comments" class="card card-body mb-3">
+          <div class="row">
+            <div class="col-md-2">
+              <a [routerLink]="['/user-profile', comment.creator]">
+                <img class="rounded-circle d-none d-md-block" [src]="comment.avatar" alt="" />
+              </a>
+              <br />
+              <p class="text-center">{{comment.name}}</p>
+            </div>
+            <div class="col-md-10">
+              <p class="lead">{{comment.text}}</p>
+
+              <button *ngIf="comment.creator === userId" (click)="onDeleteClick(postId, comment._id)" type="button" class="btn btn-danger mr-1">
+
+                <fa-icon [icon]="faTimes"></fa-icon>
+              </button>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+<mat-spinner *ngIf="isLoading"></mat-spinner>
+<p class="no-profile-message" *ngIf="!isLoading && profiles && profiles.length === 0">There are no profiles</p>
+<div class="container" *ngIf="!isLoading && profiles.length > 0">
+  <div class="row">
+    <div class="col-md-12">
+      <h1 class="display-4 text-center">Citizen profiles</h1>
+      <p class="lead text-center">
+        Behold your fellow citizens
+      </p>
+      <div class="card card-body bg-light mb-3" *ngFor="let profile of profiles">
+        <div class="row">
+          <div class="col-2">
+            <img [src]="profile.user.avatar" alt="" class="rounded-circle" />
+          </div>
+          <div class="col-lg-6 col-md-4 col-8">
+            <h3>{{profile.user.name}}</h3>
+            <p *ngIf="profile.company">
+              {{profile.company}}
+            </p>
+            <p *ngIf="profile.location">
+              {{profile.location}}
+            </p>
+            <a [routerLink]="['/profile', profile.handle]" class="btn btn-info">
+              View Profile
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

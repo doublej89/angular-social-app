@@ -48,14 +48,16 @@ export class PostCreateComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         this.mode = "edit";
         this.postId = paramMap.get("postId");
-        this.postsService.getPost(this.postId).subscribe(postData => {
+        this.postsService.getPost(this.postId).subscribe((postData: any) => {
           this.isLoading = false;
           this.post = {
             id: postData._id,
             title: postData.title,
             content: postData.content,
             imagePath: postData.imagePath,
-            creator: postData.creator
+            creator: postData.creator,
+            name: this.authService.getUserName(),
+            avatar: this.authService.getUserAvatar()
           };
           this.form.setValue({
             title: this.post.title,
@@ -81,14 +83,18 @@ export class PostCreateComponent implements OnInit, OnDestroy {
       this.postsService.addPost(
         this.form.value.title,
         this.form.value.content,
-        this.form.value.image
+        this.form.value.image,
+        this.authService.getUserName(),
+        this.authService.getUserAvatar()
       );
     } else {
       this.postsService.updatePost(
         this.postId,
         this.form.value.title,
         this.form.value.content,
-        this.form.value.image
+        this.form.value.image,
+        this.authService.getUserName(),
+        this.authService.getUserAvatar()
       );
     }
     this.form.reset();

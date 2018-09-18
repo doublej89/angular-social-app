@@ -1,0 +1,103 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="row">
+        <div class="col-md-6">
+          <a routerLink="/profiles" class="btn btn-light mb-3 float-left">
+            Back to Profiles
+          </a>
+        </div>
+      </div>
+      <div *ngIf="noProfile" class="alert alert-info" role="alert">
+        This user hasn't yet created a profile!
+      </div>
+      <div *ngIf="profile && !noProfile" class="row">
+        <div class="col-md-12">
+          <div class="card card-body bg-info text-white mb-3">
+            <div class="row">
+              <div *ngIf="profile" class="col-4 col-md-3 m-auto">
+                <img class="rounded-circle" [src]="profile.user.avatar" alt="profile.user.name" />
+              </div>
+            </div>
+            <div *ngIf="profile" class="text-center">
+              <h1 class="display-4 text-center">{{profile.user.name}}</h1>
+              <p class="lead text-center">
+                {{profile.status}}
+                <span *ngIf="profile.company">at {{profile.company}}</span>
+              </p>
+              <p *ngIf="profile.location">{{profile.location}}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card card-body bg-light mb-3">
+            <h3 class="text-center text-info">{{firstName}}'s Bio</h3>
+            <p *ngIf="profile" class="lead">
+              <span *ngIf="!profile.bio">{{firstName}} doesn't have a bio</span>
+              <span *ngIf="profile.bio">{{profile.bio}}</span>
+            </p>
+            <hr />
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <h3 class="text-center text-info">Experience</h3>
+          <ul *ngIf="profile && profile.experience && profile.experience.length > 0" class="list-group">
+            <li *ngFor="let exp of profile.experience" class="list-group-item">
+              <h4>{{exp.company}}</h4>
+              <p>
+                {{exp.from | amParse:'YYYY/MM/DD' | amDateFormat:'LL'}} -{{" "}}
+                <span *ngIf="!exp.to">Now</span>
+                <span *ngIf="exp.to">{{exp.to | amParse:'YYYY/MM/DD' | amDateFormat:'LL'}}</span>
+              </p>
+              <p>
+                <strong>Position:</strong> {{exp.title}}
+              </p>
+              <p>
+                <span *ngIf="exp.location">
+                  <strong>Location: </strong> {{exp.location}}
+                </span>
+              </p>
+              <p>
+                <span *ngIf="exp.description">
+                  <strong>Description: </strong> {{exp.description}}
+                </span>
+              </p>
+            </li>
+          </ul>
+          <p *ngIf="profile && (!profile.experience || !profile.experience.length > 0)" class="text-center">No Experience
+            Listed
+          </p>
+        </div>
+        <div class="col-md-6">
+          <h3 class="text-center text-info">Education</h3>
+          <ul *ngIf="profile && profile.education && profile.education.length > 0" class="list-group">
+            <li *ngFor="let edu of profile.education" class="list-group-item">
+              <h4>{{edu.school}}</h4>
+              <p>
+                {{edu.from | amParse:'YYYY/MM/DD' | amDateFormat:'LL'}} -{{" "}}
+                <span *ngIf="edu.to === null">Now</span>
+                <span *ngIf="edu.to !== null">{{edu.to | amParse:'YYYY/MM/DD' | amDateFormat:'LL'}}</span>
+              </p>
+              <p>
+                <strong>Degree:</strong> {{edu.degree}}
+              </p>
+              <p>
+                <strong>Field of Study:</strong> {{edu.fieldofstudy}}
+              </p>
+              <p>
+                <span *ngIf="edu.description">
+                  <strong>Description: </strong> {{edu.description}}
+                </span>
+              </p>
+            </li>
+          </ul>
+          <p *ngIf="profile && (!profile.education || !profile.education.length > 0)" class="text-center">No Education Listed</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

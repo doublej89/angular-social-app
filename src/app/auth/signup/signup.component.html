@@ -2,6 +2,10 @@
   <mat-spinner *ngIf="isLoading"></mat-spinner>
   <form (submit)="onSignup(signupForm)" #signupForm="ngForm" *ngIf="!isLoading">
     <mat-form-field>
+      <input matInput name="name" ngModel type="text" required placeholder="Name" #nameInput="ngModel">
+      <mat-error *ngIf="emailInput.invalid">Please enter a name</mat-error>
+    </mat-form-field>
+    <mat-form-field>
       <input matInput name="email" ngModel type="email" required email placeholder="Email" #emailInput="ngModel">
       <mat-error *ngIf="emailInput.invalid">Please enter a valid email</mat-error>
     </mat-form-field>

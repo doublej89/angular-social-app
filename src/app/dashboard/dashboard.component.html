@@ -1,0 +1,87 @@
+<mat-spinner *ngIf="isLoading"></mat-spinner>
+<div *ngIf="!isLoading && !hasProfile">
+  <p class="lead text-muted">Welcome {{userName}}</p>
+  <p>You have not set up a profile, please add some info</p>
+  <a routerLink="/create-profile" class="btn btn-lg btn-info">
+    Create Profile
+  </a>
+</div>
+<div *ngIf="hasProfile">
+  <p class="lead text-muted">
+    Welcome <a [routerLink]="['/profile', profile.handle]">{{userName}}</a>
+  </p>
+  <a routerLink="/edit-profile" class="btn btn-light">
+    <fa-icon [icon]="faUserCircle" class="text-info mr-1"></fa-icon>
+    Edit Profile
+  </a>
+  <a routerLink="/add-experience" class="btn btn-light">
+    <fa-icon [icon]="faUserTie" class="text-info mr-1"></fa-icon>
+    Add Experience
+  </a>
+  <a routerLink="/add-education" class="btn btn-light">
+    <fa-icon [icon]="faGraduationCap" class="text-info mr-1"></fa-icon>
+    Add Education
+  </a>
+  <div *ngIf="profile.experience">
+    <h1 class="mb-4">Experience Credentials</h1>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Company</th>
+          <th>Years</th>
+          <th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let exp of profile.experience">
+          <td>{{exp.company}}</td>
+          <td>{{exp.title}}</td>
+          <td>
+            {{exp.from | amParse:'YYY/MM/DD' | amDateFormat:'LL'}} -{{" "}}
+            <span *ngIf="!exp.to">Now</span>
+            <span *ngIf="exp.to">{{exp.to | amParse:'YYY/MM/DD' | amDateFormat:'LL'}}</span>
+          </td>
+          <td>
+            <button (click)="onDeleteExp(exp._id)" class="btn btn-danger">
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div *ngIf="profile.education">
+    <h1 class="mb-4">Education Credentials</h1>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>School</th>
+          <th>Degree</th>
+          <th>Years</th>
+          <th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let edu of profile.education">
+          <td>{{edu.school}}</td>
+          <td>{{edu.degree}}</td>
+          <td>
+            {{edu.from | amParse:'YYY/MM/DD' | amDateFormat:'LL'}} -{{" "}}
+            <span *ngIf="!edu.to">Now</span>
+            <span *ngIf="edu.to">{{edu.to | amParse:'YYY/MM/DD' | amDateFormat:'LL'}}</span>
+          </td>
+          <td>
+            <button (click)="onDeleteEdu(edu._id)" class="btn btn-danger">
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="margin-bottom: 60px;">
+    <button (click)="onDeleteAccount()" class="btn btn-danger">
+      Delete Account
+    </button>
+  </div>

@@ -1,0 +1,30 @@
+<mat-card>
+  <mat-spinner *ngIf="isLoading"></mat-spinner>
+  <form [formGroup]="eduForm" (submit)="onAddEdu()" *ngIf="!isLoading">
+    <mat-form-field appearance="outline">
+      <mat-label>* School</mat-label>
+      <input matInput type="text" formControlName="school" placeholder="* school">
+      <mat-error *ngIf="eduForm.get('school').invalid && eduForm.get('school').touched">Please enter the name of the school</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>* Degree</mat-label>
+      <input matInput type="text" formControlName="degree" placeholder="* Degree">
+      <mat-error *ngIf="eduForm.get('degree').invalid && eduForm.get('degree').touched">Please enter your Degree</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>* Field of Study</mat-label>
+      <input matInput type="text" formControlName="fieldofstudy" placeholder="* Field of Study">
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>From Date</mat-label>
+      <input matInput type="date" formControlName="from">
+      <mat-error *ngIf="eduForm.get('from').invalid && eduForm.get('from').touched">Your job must've started some time!</mat-error>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>To Date</mat-label>
+      <input matInput type="date" formControlName="to">
+    </mat-form-field>
+    <mat-checkbox (change)="handleCheck()" [value]="current">Current</mat-checkbox>
+    <button mat-raised-button color="accent" type="submit">Add Eduction</button>
+  </form>
+</mat-card>

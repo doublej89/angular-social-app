@@ -1,17 +1,35 @@
 <mat-spinner *ngIf="isLoading"></mat-spinner>
-<mat-accordion multi="true" *ngIf="posts.length > 0 && !isLoading">
-  <mat-expansion-panel *ngFor="let post of posts">
-    <mat-expansion-panel-header>{{post.title}}</mat-expansion-panel-header>
-    <div class="post-image">
-      <img [src]="post.imagePath" alt="post.title">
-    </div>
-    <p>{{post.content}}</p>
-    <mat-action-row *ngIf="isAuthenticated && userId === post.creator">
-      <a mat-button color="primary" [routerLink]="['/edit', post.id]">EDIT</a>
-      <button mat-button color="warn" (click)="onDelete(post.id)">DELETE</button>
-    </mat-action-row>
-  </mat-expansion-panel>
-</mat-accordion>
+<div class="post-item" *ngIf="posts.length > 0 && !isLoading">
+  <mat-card *ngFor="let post of posts">
+    <mat-card-header>
+      <a mat-card-avatar [routerLink]="['/user-profile', post.creator]">
+        <img style="width: 100%; border-radius: 50%;" [src]="post.avatar" alt="" />
+      </a>
+      <mat-card-title>{{post.title}}</mat-card-title>
+      <mat-card-subtitle>{{post.date | amTimeAgo:true}}</mat-card-subtitle>
+    </mat-card-header>
+    <img mat-card-image [src]="post.imagePath" alt="post.title">
+    <mat-card-content>
+      <p>
+        {{post.content}}
+      </p>
+    </mat-card-content>
+    <mat-card-actions>
+      <button *ngIf="isAuthenticated" (click)="onLikeClick(post.id)" type="button " mat-button>
+        <fa-icon [icon]="faThumbsUp " [ngClass]="{ 'text-info': post.likes ? findUserLike(post.likes) : false} "></fa-icon>
+        <span class="badge badge-light">{{post.likes.length}}</span>
+      </button>
+      <button *ngIf="isAuthenticated" (click)="onUnLikeClick(post.id)" mat-button>
+        <fa-icon [icon]="faThumbsDown" class="text-secondary"></fa-icon>
+      </button>
+      <a [routerLink]="['/post', post.id]" class="btn btn-info mr-1">
+        Comments
+      </a>
+      <button *ngIf="isAuthenticated && userId === post.creator" mat-button color="primary" [routerLink]="['/edit', post.id]">EDIT</button>
+      <button *ngIf="isAuthenticated && userId === post.creator" mat-button color="warn" (click)="onDelete(post.id)">DELETE</button>
+    </mat-card-actions>
+  </mat-card>
+</div>
 <mat-paginator [length]="totalPosts" [pageSize]="postsPerPage" [pageSizeOptions]="pageSizeOptions" (page)="onChangedPage($event)"
   *ngIf="posts.length > 0"></mat-paginator>
 <p class="mat-body-1 info-text" *ngIf="posts.length <= 0 && !isLoading">No posts added yet</p>

@@ -5,8 +5,9 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Router } from "@angular/router";
 import { environment } from "../../environments/environment";
+import { AuthService } from "../auth/auth.service";
 
-const BACKEND_URL = environment.apiURL + "/posts";
+const BACKEND_URL = "/api/posts";
 
 @Injectable()
 export class PostsService {
@@ -30,7 +31,11 @@ export class PostsService {
                 title: post.title,
                 content: post.content,
                 imagePath: post.imagePath,
-                creator: post.creator
+                creator: post.creator,
+                name: post.name,
+                avatar: post.avatar,
+                likes: post.likes ? post.likes : [],
+                comments: post.comments ? post.comments : []
               };
             }),
             maxPosts: postsData.maxPosts
@@ -50,11 +55,19 @@ export class PostsService {
     return this.postsUpdated.asObservable();
   }
 
-  addPost(title: string, content: string, image: File) {
+  addPost(
+    title: string,
+    content: string,
+    image: File,
+    name: string,
+    avatar: string
+  ) {
     const postData = new FormData();
     postData.append("title", title);
     postData.append("content", content);
     postData.append("image", image, title);
+    postData.append("name", name);
+    postData.append("avatar", avatar);
     this.httpClient
       .post<{ message: string; post: Post }>(BACKEND_URL, postData)
       .subscribe(resData => {
@@ -62,17 +75,43 @@ export class PostsService {
       });
   }
 
-  getPost(id: string) {
-    return this.httpClient.get<{
-      _id: string;
-      title: string;
-      content: string;
-      imagePath: string;
-      creator: string;
-    }>(BACKEND_URL + "/" + id);
+  addComment(
+    id: string,
+    comment: {
+      text: string;
+      name: string;
+      avatar: string;
+    }
+  ) {
+    return this.httpClient.post(`${BACKEND_URL}/comment/${id}`, comment);
   }
 
-  updatePost(id: string, title: string, content: string, image: File | string) {
+  deleteComment(postId: string, commentId: string) {
+    return this.httpClient.delete(
+      `${BACKEND_URL}/comment/${postId}/${commentId}`
+    );
+  }
+
+  addLike(postId: string) {
+    return this.httpClient.post(`${BACKEND_URL}/like/${postId}`, null);
+  }
+
+  removeLike(postId: string) {
+    return this.httpClient.post(`${BACKEND_URL}/unlike/${postId}`, null);
+  }
+
+  getPost(id: string) {
+    return this.httpClient.get(BACKEND_URL + "/" + id);
+  }
+
+  updatePost(
+    id: string,
+    title: string,
+    content: string,
+    image: File | string,
+    name: string,
+    avatar: string
+  ) {
     let postData: Post | FormData;
     if (typeof image === "object") {
       postData = new FormData();
@@ -80,13 +119,17 @@ export class PostsService {
       postData.append("title", title);
       postData.append("content", content);
       postData.append("image", image, title);
+      postData.append("name", name);
+      postData.append("avatar", avatar);
     } else {
       postData = {
         id: id,
         title: title,
         content: content,
         imagePath: image,
-        creator: null
+        creator: null,
+        name: name,
+        avatar: avatar
       };
     }
     this.httpClient

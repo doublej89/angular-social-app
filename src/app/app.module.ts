@@ -12,16 +12,38 @@ import { ErrorComponent } from "./error/error.component";
 import { ErrorInterceptor } from "./error-interceptor";
 import { AngularMaterialModule } from "./angular-material.module";
 import { PostsModule } from "./posts/posts.module";
+import { ProfileComponent } from "./profile/profile.component";
+import { ProfileListComponent } from "./profile-list/profile-list.component";
+import { MomentModule } from "angular2-moment";
+import { ProfileCreateComponent } from "./profile-create/profile-create.component";
+import { ReactiveFormsModule } from "@angular/forms";
+import { DashboardComponent } from "./dashboard/dashboard.component";
+import { AddExperienceComponent } from "./add-experience/add-experience.component";
+import { AddEducationComponent } from "./add-education/add-education.component";
+import { FontAwesomeModule } from "@fortawesome/angular-fontawesome";
 
 @NgModule({
-  declarations: [AppComponent, HeaderComponent, ErrorComponent],
+  declarations: [
+    AppComponent,
+    HeaderComponent,
+    ErrorComponent,
+    ProfileComponent,
+    ProfileListComponent,
+    ProfileCreateComponent,
+    DashboardComponent,
+    AddExperienceComponent,
+    AddEducationComponent
+  ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     AngularMaterialModule,
     HttpClientModule,
-    PostsModule
+    PostsModule,
+    MomentModule,
+    ReactiveFormsModule,
+    FontAwesomeModule
   ],
   providers: [
     PostsService,
