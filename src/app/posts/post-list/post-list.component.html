@@ -23,7 +23,7 @@
         <fa-icon [icon]="faThumbsDown" class="text-secondary"></fa-icon>
       </button>
       <a [routerLink]="['/post', post.id]" class="btn btn-info mr-1">
-        Comments
+        Comments ({{post.comments.length}})
       </a>
       <button *ngIf="isAuthenticated && userId === post.creator" mat-button color="primary" [routerLink]="['/edit', post.id]">EDIT</button>
       <button *ngIf="isAuthenticated && userId === post.creator" mat-button color="warn" (click)="onDelete(post.id)">DELETE</button>
