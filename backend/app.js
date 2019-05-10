@@ -13,19 +13,26 @@ const MIME_TYPE_MAP = {
   "image/jpeg": "jpg"
 };
 const gravatar = require("gravatar");
+const cloudinary = require("cloudinary");
 
 const jwt = require("jsonwebtoken");
 const checkToken = require("./middleware/check-token");
 
+cloudinary.config({
+  cloud_name: "dzube23xx",
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const isValid = MIME_TYPE_MAP[file.mimetype];
-    let error = new Error("Invalid mimetype!");
-    if (isValid) {
-      error = null;
-    }
-    cb(error, "backend/images");
-  },
+  // destination: (req, file, cb) => {
+  //   const isValid = MIME_TYPE_MAP[file.mimetype];
+  //   let error = new Error("Invalid mimetype!");
+  //   if (isValid) {
+  //     error = null;
+  //   }
+  //   cb(error, "backend/images");
+  // },
   filename: (req, file, cb) => {
     const name = file.originalname
       .toLowerCase()
@@ -97,35 +104,43 @@ app.post(
   checkToken,
   multer({ storage: storage }).single("image"),
   (req, res, next) => {
-    const url = "https://" + req.get("host");
-    const post = new Post({
-      title: req.body.title,
-      content: req.body.content,
-      imagePath: url + "/images/" + req.file.filename,
-      creator: req.userData.userId,
-      name: req.body.name,
-      avatar: req.body.avatar,
-      date: Date.now()
-    });
-    post
-      .save()
-      .then(result => {
-        res.status(201).json({
-          message: "Post succeeded!",
-          post: {
-            id: result._id,
-            title: result.title,
-            content: result.content,
-            imagePath: result.imagePath,
-            creator: result.creator,
-            name: result.name,
-            date: result.date
-          }
-        });
-      })
-      .catch(err => {
-        res.status(500).json({ message: "Unable to create post!" });
+    //const url = "https://" + req.get("host");
+    cloudinary.v2.uploader.upload(req.file.path, function(error, result) {
+      if (error) {
+        console.log("Something went wrong with cloudinary upload!");
+        console.log(error);
+        return;
+      }
+
+      const post = new Post({
+        title: req.body.title,
+        content: req.body.content,
+        imagePath: result.secure_url,
+        creator: req.userData.userId,
+        name: req.body.name,
+        avatar: req.body.avatar,
+        date: Date.now()
       });
+      post
+        .save()
+        .then(result => {
+          res.status(201).json({
+            message: "Post succeeded!",
+            post: {
+              id: result._id,
+              title: result.title,
+              content: result.content,
+              imagePath: result.imagePath,
+              creator: result.creator,
+              name: result.name,
+              date: result.date
+            }
+          });
+        })
+        .catch(err => {
+          res.status(500).json({ message: "Unable to create post!" });
+        });
+    });
   }
 );
 
@@ -136,29 +151,33 @@ app.put(
   (req, res, next) => {
     let imagePath = req.body.imagePath;
     if (req.file) {
-      const url = "https://" + req.get("host");
-      imagePath = url + "/images/" + req.file.filename;
-    }
-    Post.findOneAndUpdate(
-      { _id: req.params.id, creator: req.userData.userId },
-      {
-        title: req.body.title,
-        content: req.body.content,
-        imagePath: imagePath,
-        creator: req.userData.userId,
-        avatar: req.body.avatar,
-        name: req.body.name
-      }
-    )
-      .then(result => {
-        console.log(result);
-        res.status(200).json({ message: "Update succeeded!", result: result });
-      })
-      .catch(err => {
-        res
-          .status(500)
-          .json({ message: "Possible a technical malfunction error!" });
+      // const url = "https://" + req.get("host");
+      // imagePath = url + "/images/" + req.file.filename;
+      cloudinary.v2.uploader.upload(req.file.path, function(error, result) {
+        Post.findOneAndUpdate(
+          { _id: req.params.id, creator: req.userData.userId },
+          {
+            title: req.body.title,
+            content: req.body.content,
+            imagePath: result.secure_url,
+            creator: req.userData.userId,
+            avatar: req.body.avatar,
+            name: req.body.name
+          }
+        )
+          .then(result => {
+            console.log(result);
+            res
+              .status(200)
+              .json({ message: "Update succeeded!", result: result });
+          })
+          .catch(err => {
+            res
+              .status(500)
+              .json({ message: "Possible a technical malfunction error!" });
+          });
       });
+    }
   }
 );
 
